@@ -89,7 +89,7 @@ def simulateDrive(routeLengthMiles, numOfLights): #main function
 if __name__ == "__main__": #calls main 
     #totalTimeDifference=0
     #for x in range(10000):
-    routeLengthMiles, speedingDriver, steadyDriver, lights = simulateDrive(10,20)
+    routeLengthMiles, speedingDriver, steadyDriver, lights = simulateDrive(30,60)
     simulateCarMovement(routeLengthMiles,speedingDriver,steadyDriver,lights)
 
 
