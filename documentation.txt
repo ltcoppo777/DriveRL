@@ -1,0 +1,52 @@
+"""
+Documentation generated with the assistance of AI (ChatGPT). Function descriptions, structure, and sources were reviewed and verified by me to ensure clarity and accuracy.
+
+-----------------------------------
+Driver Class Documentation
+-----------------------------------
+
+get_acceleration_penalty_per_stop method:
+    Returns a per-stop time penalty (in seconds) based on driver behavior.
+    Speeders receive a higher penalty due to aggressive acceleration and stop-start inefficiency.
+
+    Based on:
+    - J.S. Held Study on intersection behavior:
+      https://www.jsheld.com/insights/articles/a-naturalistic-study-of-vehicle-acceleration-and-deceleration-at-an-intersection
+    - Hypertextbook on average car acceleration:
+      https://hypertextbook.com/facts/2001/MeredithBarricella.shtml
+
+-----------------------------------
+TrafficLight Class Documentation
+-----------------------------------
+
+generate_random_cycle method:
+
+- cycle_duration: Randomly chosen between 55–75 seconds.
+  Source: Federal Highway Administration (FHWA) — Signal Timing Basics.
+  https://ops.fhwa.dot.gov/publications/fhwahop08024/chapter3.htm
+
+- green_duration: Set to 50% of total cycle.
+  Source: Common practice in coordinated traffic signal systems.
+  https://ops.fhwa.dot.gov/publications/fhwahop08024/chapter3.htm
+
+- yellow_duration: Fixed at 4.0 seconds.
+  Source: FHWA recommendation (typically 3–5 seconds based on approach speed).
+  https://safety.fhwa.dot.gov/intersection/conventional/yellow/
+
+- red_duration: Calculated as the remainder of the cycle after subtracting green and yellow durations.
+
+assign_offset_to_light method:
+
+- Purpose: Simulates partial green wave coordination by assigning a time offset to the traffic light’s cycle. This offset determines where in the cycle the light begins relative to simulation start.
+
+- Behavior: 
+  - With 45% probability, the light’s offset is calculated to sync with a steady driver’s expected arrival time, creating the possibility of a green wave.
+  - With 55% probability, the light receives a random offset, making it behave independently and simulating imperfect real-world signal coordination.
+
+- Why this is realistic:
+  In most cities, not all traffic lights are coordinated. Signal coordination typically occurs in timed corridors or “zones,” and only a portion of lights follow green wave patterns. This approach models that by giving the steady driver a better (but not perfect) experience.
+
+- Source: 
+  - NACTO Urban Street Design Guide – Signal Coordination
+    https://nacto.org/publication/urban-street-design-guide/intersection-design-elements/traffic-signals/signal-coordination/
+"""

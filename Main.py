@@ -1,96 +1,57 @@
-import random
-
-def lightProperties(routeLength, numOfTrafficLights):
-    spaceBetweenLights = routeLength / numOfTrafficLights #evenly spaces out the length for each light
-    lightArrayOfDictionaries = [] 
-    for x in range(numOfTrafficLights): #creates my dictionary with each light :)
-        counter = x+1
-        currentPositionMiles = counter * spaceBetweenLights
-        currentCycleTimeSec = random.randint(50,90)
-        currentRedDurationSec = random.randint(20,60)
-        currentOffsetSec = random.randint(0,currentCycleTimeSec)
-
-        light = {"id": x + 1, "positionMiles": currentPositionMiles, "cycleTimeInSeconds": currentCycleTimeSec, "redLightDurationInSeconds": currentRedDurationSec, "offsetInSeconds": currentOffsetSec} #storing the data as a dictionary of dictionaries so that I can have each light have many properties
-        lightArrayOfDictionaries.append(light)
-
-    return lightArrayOfDictionaries
-    
+from models.driver import Driver
+from models.traffic_light import TrafficLight
+from simulation.simulator import Simulator
 
 
-def simulateCarMovement(routeLengthMiles, speedingDriver, steadyDriver, lights):
-    steadyRedCount = 0
-    steadyGreenCount = 0
-    speederRedCount = 0
-    speederGreenCount = 0
+def compute_max_possible_saved(dist_miles, steady_speed, speeder_speed): #Helper to calculate max speeder optimal time
+    steady_time = (dist_miles / steady_speed) * 3600
+    speeder_time = (dist_miles / speeder_speed) * 3600
+    return steady_time - speeder_time
 
-    for currentLight in lights: #loops through the array of lights
-        currentLightPosition = currentLight["positionMiles"]
-        currentLightCycleTime = currentLight["cycleTimeInSeconds"]
-        currentLightOffset = currentLight["offsetInSeconds"]
-        currentRedLightDuration = currentLight["redLightDurationInSeconds"]
+if __name__ == "__main__":
+    #User Inputs
+    total_distance = 10
+    num_lights= 16
+    speed_limit = 40
+    steady_style = "safe"
+    speeder_style = "aggressive"
 
-        steadyDriverDistanceToNextLight = currentLightPosition - steadyDriver["positionMiles"] #tracking position per light
-        steadyDriverTravelTime = (steadyDriverDistanceToNextLight / steadyDriver["speedMph"]) * 3600 #tracking time per light
-        steadyDriver["timeElapsedSec"] += steadyDriverTravelTime
-        steadyDriver["positionMiles"] = currentLightPosition
+    total_time_differences = 0
+    total_steady_reds = 0
+    total_speedy_reds = 0
 
-        speederDistanceToNextLight = currentLightPosition - speedingDriver["positionMiles"] #tracking position per light
-        speederTravelTime = (speederDistanceToNextLight / speedingDriver["speedMph"]) * 3600 #tracking time per light
-        speedingDriver["timeElapsedSec"] += speederTravelTime
-        speedingDriver["positionMiles"] = currentLightPosition
+    actual_speeder_speeds = [] #tracks speeds
 
+    for _ in range(1000):
+        #Passes driver styles into simulator
+        sim = Simulator(total_distance=total_distance, num_lights=num_lights, speed_limit=speed_limit, steady_style=steady_style, speeder_style=speeder_style)
+        #Override area: Overrides driver styles directly if needed
+        #sim.steady_driver = Driver("d1", speed_limit, driver_style=steady_style)
+        #sim.speeder_driver = Driver("d2", speed_limit, driver_style=speeder_style)
 
-        steadyDriverArrivalTime = steadyDriver["timeElapsedSec"]+currentLightOffset #Gives me the exact time of when in the light's cycle the driver arrives
-        speedingDriverArrivalTime = speedingDriver["timeElapsedSec"]+currentLightOffset
+        actual_speeder_speeds.append(sim.speeder_driver.speed_mph)
 
-        steadyLightTime = steadyDriverArrivalTime%currentLightCycleTime 
-        if(steadyLightTime<currentRedLightDuration):
-            #print("Steady driver hits red light")
-            steadyWaitTime = currentRedLightDuration - steadyLightTime
-            steadyDriver["timeElapsedSec"] += steadyWaitTime
-            steadyRedCount+=1
-        else:
-            #print("Steady driver hits green light")
-            steadyGreenCount+=1
-            #print("Steady driver position: ", steadyDriver["positionMiles"], "Steady driver travel time: ", steadyDriver["timeElapsedSec"])
+        time_diff, steady_reds, speedy_reds = sim.run_simulation()
+        total_time_differences += time_diff
+        total_steady_reds += steady_reds
+        total_speedy_reds += speedy_reds
 
-        
-        speedingLightTime = speedingDriverArrivalTime%currentLightCycleTime
-        if(speedingLightTime<currentRedLightDuration):
-            #print("Speeder hits red light")
-            speederWaitTime = currentRedLightDuration - speedingLightTime
-            speedingDriver["timeElapsedSec"] += speederWaitTime
-            speederRedCount+=1
-        else:
-            #print("Speeder hits green light")
-            speederGreenCount+=1
-        
-        #print("Speeder position: ", speedingDriver["positionMiles"], "Speeder travel time: ", speedingDriver["timeElapsedSec"])
-    
-    print("\n--- Final Results ---")
-    print(f"Steady Driver Total Time: {round(steadyDriver['timeElapsedSec'], 2)} seconds")
-    print(f"Speeder Total Time: {round(speedingDriver['timeElapsedSec'], 2)} seconds")
-    print(f"Time difference: {round(abs(steadyDriver['timeElapsedSec'] - speedingDriver['timeElapsedSec']), 2)} seconds")
-    print(f"Steady Driver hit {steadyRedCount} red lights and {steadyGreenCount} green lights.")
-    print(f"Speeder hit {speederRedCount} red lights and {speederGreenCount} green lights.")
+    #Averages
+    avg_diff = total_time_differences / 1000
+    avg_steady_reds = total_steady_reds / 1000
+    avg_speedy_reds = total_speedy_reds / 1000
 
+    #Compute % of max saved
+    steady_speed = speed_limit  
+    avg_speeder_speed = sum(actual_speeder_speeds) / len(actual_speeder_speeds) #average
+    max_possible = compute_max_possible_saved(total_distance, steady_speed, avg_speeder_speed)
+    percent_saved = (avg_diff / max_possible) * 100 if max_possible else 0
 
- 
-
-def simulateDrive(routeLengthMiles, numOfLights): #main function
-    print(f"Simulating a drive for {routeLengthMiles} miles...")
-    speedingDriver={"id":"speedingDriver","speedMph":55,"positionMiles":0,"timeElapsedSec":0} #speeder
-    steadyDriver={"id":"steadyDriver","speedMph":45,"positionMiles":0,"timeElapsedSec":0} #steady
-    lights = lightProperties(routeLengthMiles,numOfLights) #calls the lightProperties function and returns the array of dictionaries with the properties for each light
-    #print(lights) #just to output the properties in console
-    return routeLengthMiles, speedingDriver, steadyDriver, lights
-
-
-if __name__ == "__main__": #calls main 
-    #totalTimeDifference=0
-    #for x in range(10000):
-    routeLengthMiles, speedingDriver, steadyDriver, lights = simulateDrive(30,60)
-    simulateCarMovement(routeLengthMiles,speedingDriver,steadyDriver,lights)
-
-
-
+    #Output
+    print(f"Distance: {total_distance} miles at {speed_limit} mph")
+    print(f"Driver Styles: {steady_style} vs {speeder_style}")
+    print(f"Actual Average Speeder Speed: {avg_speeder_speed:.1f} mph")
+    print(f"Avg Time Saved: {avg_diff:.2f} sec")
+    print(f"Percent of Max Saved: {percent_saved:.2f}%")
+    print(f"Avg Steady Reds: {avg_steady_reds:.2f}")
+    print(f"Avg Speeder Reds: {avg_speedy_reds:.2f}")
