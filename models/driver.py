@@ -37,17 +37,19 @@ class Driver:
             self.time_elapsed_sec+=0 #same here
             return 0.0
         
-        #the real function
-
-        #added for deceleration penalty in traffic cluster logic
-        if override_speed_mph!=None:
+        #to prevent divide zero error
+        if override_speed_mph is not None:
             speed_to_use = override_speed_mph
         else:
             speed_to_use = self.speed_mph
+        
+        if speed_to_use < 0.1:
+            speed_to_use = 0.1
 
-
+        #the real function
         distance_to_travel = target_position-self.position_miles
         travel_time_seconds = (distance_to_travel/speed_to_use)*3600 #3600 converts hours to seconds
+
         self.position_miles = target_position
         self.time_elapsed_sec+= travel_time_seconds
         return travel_time_seconds 

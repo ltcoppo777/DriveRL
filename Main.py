@@ -14,7 +14,7 @@ if __name__ == "__main__":
     num_lights= 16
     speed_limit = 40
     steady_style = "safe"
-    speeder_style = "aggressive"
+    speeder_style = "aggressive" #You may choose between safe, realistic, or aggressive. Safe goes the speed limit, realistic speeders go 5-10 above, and aggressive go 11-16 above.
 
     total_time_differences = 0
     total_steady_reds = 0
@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     actual_speeder_speeds = [] #tracks speeds
 
-    for _ in range(1000):
+    for _ in range(1000): #If you found this part, you can change the "1000" for number of times the simulation runs but you'd have to change it everywhere
         #Passes driver styles into simulator
         sim = Simulator(total_distance=total_distance, num_lights=num_lights, speed_limit=speed_limit, steady_style=steady_style, speeder_style=speeder_style)
         #Override area: Overrides driver styles directly if needed
