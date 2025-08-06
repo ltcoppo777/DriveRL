@@ -50,7 +50,7 @@ By introducing AI agents, DriveRL goes beyond static simulations, and explores w
 - 🖥️ **Modular Backend** – Fully modular, scalable driving simulation built for flexibility and expansion  
 - 🚗 **Human Driver Models** – Steady and speeding driver behaviors fully implemented in the backend
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Language:** Python 3.13  
 - **Reinforcement Learning:** Stable-Baselines3 – PPO *(Proximal Policy Optimization)* with MLP policy  
